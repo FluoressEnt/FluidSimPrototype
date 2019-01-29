@@ -126,13 +126,13 @@
     <ClCompile Include="FluidSolver.cpp" />
     <ClCompile Include="InputHelper.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="Colour3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConversionTools.h" />
     <ClInclude Include="FluidSolver.h" />
     <ClInclude Include="InputHelper.h" />
-    <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Colour3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -27,7 +27,7 @@
     <ClCompile Include="InputHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Vector3.cpp">
+    <ClCompile Include="Colour3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClInclude Include="InputHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vector3.h">
+    <ClInclude Include="Colour3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -67,7 +67,7 @@ void InputHelper::Render()
 
 	for (int i = 0; i < ConversionTools::GetArrayLength(); i++) {
 
-		Vector3 colourValue = DetermineColour(calculatedDensity[i]); //delete copy and assignment operators
+		Colour3 colourValue = DetermineColour(calculatedDensity[i]); //delete copy and assignment operators
 
 		std::tuple<int, int> coords = ConversionTools::ConvertArraytoCoord(i);
 		float x = ConvertWindowToGL(std::get<1>(coords), false);
@@ -93,11 +93,11 @@ void InputHelper::Calculate() {
 	Render();
 }
 
-Vector3 InputHelper::DetermineColour(float value)
+Colour3 InputHelper::DetermineColour(float value)
 {
 	//make sure not 0 or will return error
 	if (value == 0) {
-		return Vector3(0.0f, 0.0f, 0.0f);
+		return Colour3(0.0f, 0.0f, 0.0f);
 	}
 
 	//make sure no negatives so log10 works correctly
@@ -108,19 +108,19 @@ Vector3 InputHelper::DetermineColour(float value)
 		float logValue = log10(value);
 
 		if (logValue < -40) {					//pruple
-			return Vector3(0.3f, 0.0f, 0.3f);
+			return Colour3(0.3f, 0.0f, 0.3f);
 		}
 		else if (logValue < -30) {				//purple-blue
-			return Vector3(0.5f, 0.0f, 0.8f);
+			return Colour3(0.5f, 0.0f, 0.8f);
 		}
 		else if (logValue < -20) {				//blue
-			return Vector3(0.0f, 0.0f, 1.0f);
+			return Colour3(0.0f, 0.0f, 1.0f);
 		}
 		else if (logValue < -10) {				//blue-green
-			return Vector3(0.0f, 0.5f, 0.5f);
+			return Colour3(0.0f, 0.5f, 0.5f);
 		}
 		else if (logValue < 0) {				//green
-			return Vector3(0.0f, 1.0f, 0.0f);
+			return Colour3(0.0f, 1.0f, 0.0f);
 		}
 	}
 	else {
@@ -128,19 +128,19 @@ Vector3 InputHelper::DetermineColour(float value)
 		float logValue = log10(value);
 
 		if (logValue < -40) {					//yellow
-			return Vector3(1.0f, 1.0f, 0.0f);
+			return Colour3(1.0f, 1.0f, 0.0f);
 		}
 		else if (logValue < -30) {				//yellow-orange
-			return Vector3(1.0f, 0.8f, 0.0f);
+			return Colour3(1.0f, 0.8f, 0.0f);
 		}
 		else if (logValue < -20) {				//orange
-			return Vector3(1.0f, 0.5f, 0.0f);
+			return Colour3(1.0f, 0.5f, 0.0f);
 		}
 		else if (logValue < -10) {				//orange-red
-			return Vector3(1.0f, 0.2f, 0.0f);
+			return Colour3(1.0f, 0.2f, 0.0f);
 		}
 		else if (logValue < 0) {				//red
-			return Vector3(1.0f, 0.0f, 0.0f);
+			return Colour3(1.0f, 0.0f, 0.0f);
 		}
 
 	}

@@ -1,7 +1,7 @@
 #pragma once
 #include "FluidSolver.h"
 #include "ConversionTools.h"
-#include "Vector3.h"
+#include "Colour3.h"
 
 typedef struct _InputSolver {
 	FluidSolver mySolver = FluidSolver(ConversionTools::GetResolution());
@@ -22,5 +22,5 @@ private:
 	static float ConvertWindowToGL(int, bool);
 	static void setMouseButtonState(bool);
 	static bool const isMouseButtonDown();
-	static Vector3 DetermineColour(float);
+	static Colour3 DetermineColour(float);
 };
