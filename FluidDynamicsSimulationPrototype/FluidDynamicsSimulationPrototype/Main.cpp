@@ -29,7 +29,6 @@ int main(int argc, char* argv[]) {
 	glutMainLoop();
 	return 0;
 
-	//TODO: create boundary condition conversion from source array to used arrays - check if this is appropriate
 	//TODO: implement appropriate dt calculation from chrono high res clock
-	//TODO: implement more informative visual feedback display
+	//TODO: implement vector field visual feedback display
 }

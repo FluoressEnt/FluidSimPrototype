@@ -65,27 +65,24 @@ void InputHelper::Render()
 
 	float* calculatedDensity = fSolver.mySolver.GetOutArray();
 
-	for (int i = 0; i < ConversionTools::GetResolution(); i++) { //make it one loop through array and convert back to coords this is On^2 
-		for (int j = 0; j < ConversionTools::GetResolution(); j++) {
+	for (int i = 0; i < ConversionTools::GetArrayLength(); i++) {
 
-			int arrayValue = ConversionTools::ConvertCoordToArray(i, j);
+		Vector3 colourValue = DetermineColour(calculatedDensity[i]); //delete copy and assignment operators
 
-			Vector3 colourValue = DetermineColour(calculatedDensity[arrayValue]); //copy/assign constructor missing here
+		std::tuple<int, int> coords = ConversionTools::ConvertArraytoCoord(i);
+		float x = ConvertWindowToGL(std::get<1>(coords), false);
+		float y = ConvertWindowToGL(std::get<0>(coords), true);
 
-			if (fSolver.mySolver.sourceArray[arrayValue] == 1.0f) {
-				float x = ConvertWindowToGL(i, false);
-				float y = ConvertWindowToGL(j, true);
-				glColor3f(1.0f, 1.0f, 1.0f);
-				glVertex3f(x, y, 0.0f);
-			}
-			else {
-				float x = ConvertWindowToGL(i, false);
-				float y = ConvertWindowToGL(j, true);
-				glColor3f(colourValue.getX(), colourValue.getY(), colourValue.getZ());
-				glVertex3f(x, y, 0.0f);
-			}
+		if (fSolver.mySolver.sourceArray[i] == 1.0f) {
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(x, y, 0.0f);
+		}
+		else {
+			glColor3f(colourValue.getX(), colourValue.getY(), colourValue.getZ());
+			glVertex3f(x, y, 0.0f);
 		}
 	}
+
 	glEnd();
 	glutSwapBuffers();
 }
