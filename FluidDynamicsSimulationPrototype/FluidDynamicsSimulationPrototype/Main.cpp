@@ -29,6 +29,5 @@ int main(int argc, char* argv[]) {
 	glutMainLoop();
 	return 0;
 
-	//TODO: implement appropriate dt calculation from chrono high res clock
 	//TODO: implement vector field visual feedback display
 }

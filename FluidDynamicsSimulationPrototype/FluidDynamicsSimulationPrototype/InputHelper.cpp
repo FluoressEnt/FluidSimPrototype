@@ -1,10 +1,14 @@
 #include "InputHelper.h"
 #include "ConversionTools.h"
 #include <gl\freeglut.h>
+#include <chrono> 
 #include <math.h>
 #include <iostream>
 
+using namespace std::chrono;
+
 InputSolver InputHelper::fSolver;
+float dt =0.04f;
 
 void InputHelper::OnMouseClick(int button, int state, int xPos, int yPos) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -67,7 +71,7 @@ void InputHelper::Render()
 
 	for (int i = 0; i < ConversionTools::GetArrayLength(); i++) {
 
-		Colour3 colourValue = DetermineColour(calculatedDensity[i]); //delete copy and assignment operators
+		Colour3 colourValue = DetermineColour(calculatedDensity[i]);
 
 		std::tuple<int, int> coords = ConversionTools::ConvertArraytoCoord(i);
 		float x = ConvertWindowToGL(std::get<1>(coords), false);
@@ -88,9 +92,17 @@ void InputHelper::Render()
 }
 
 void InputHelper::Calculate() {
-	fSolver.mySolver.VelocityStep(1.0f, 0.04f);
-	fSolver.mySolver.DensityStep(fSolver.mySolver.sourceArray, 1.0f, 0.04f);
+
+	auto start = high_resolution_clock::now();
+
+	fSolver.mySolver.VelocityStep(1.0f, dt);
+	fSolver.mySolver.DensityStep(fSolver.mySolver.sourceArray, 1.0f, dt);
 	Render();
+
+	auto end = high_resolution_clock::now();
+
+	duration<double> timeSpan = duration_cast<duration<double>>(end - start);
+	dt = timeSpan.count();
 }
 
 Colour3 InputHelper::DetermineColour(float value)
