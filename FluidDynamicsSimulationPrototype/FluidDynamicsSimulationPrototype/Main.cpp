@@ -3,6 +3,7 @@
 #include "ConversionTools.h"
 #include "FluidSolver.h"
 #include "InputHelper.h"
+#include <iostream>
 
 using namespace std;
 
