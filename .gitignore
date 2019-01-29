@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/FluidDynamicsSimulationPrototype/Release
+/FluidDynamicsSimulationPrototype/Debug
+/FluidDynamicsSimulationPrototype/.vs/FluidDynamicsSimulationPrototype/v15
+/FluidDynamicsSimulationPrototype/FluidDynamicsSimulationPrototype/Debug
+/FluidDynamicsSimulationPrototype/FluidDynamicsSimulationPrototype/Release
