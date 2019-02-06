@@ -1,6 +1,6 @@
 #include "FluidSolver.h"
 #include "ConversionTools.h"
-//#include <stdio.h>
+//#include <math.h>
 //#include <iostream>
 //#include <fstream>
 
@@ -8,7 +8,7 @@ using namespace std;
 //ofstream debugFile;
 
 
-FluidSolver::FluidSolver(int n):N(n)
+FluidSolver::FluidSolver(int n) :N(n)
 {
 	newVelocityArrayX = new float[ConversionTools::GetArrayLength()]();
 	newVelocityArrayY = new float[ConversionTools::GetArrayLength()]();
@@ -19,7 +19,9 @@ FluidSolver::FluidSolver(int n):N(n)
 	newDensityArray = new float[ConversionTools::GetArrayLength()]();
 	oldDensityArray = new float[ConversionTools::GetArrayLength()]();
 
-	sourceArray = new float[ConversionTools::GetArrayLength()];
+	sourceDens = new float[ConversionTools::GetArrayLength()];
+	sourceVelX = new float[ConversionTools::GetArrayLength()];
+	sourceVelY = new float[ConversionTools::GetArrayLength()];
 
 	//debugFile.open("Debug.txt");
 }
@@ -28,40 +30,46 @@ FluidSolver::~FluidSolver(void)
 	//debugFile.close();
 }
 
-float* const FluidSolver::GetOutArray() {
+float* const FluidSolver::GetDensityArray() {
 	return newDensityArray;
+}
+float* const FluidSolver::GetVelocityXArray() {
+	return newVelocityArrayX;
+}
+float* const FluidSolver::GetVelocityYArray() {
+	return newVelocityArrayY;
 }
 
 void FluidSolver::VelocityStep(float viscosity, float dt) {
 
-	AddSource(newVelocityArrayX, oldVelocityArrayX, dt);
-	AddSource(newVelocityArrayY, oldVelocityArrayY, dt);
+	AddSource(newVelocityArrayX, sourceVelX, dt);
+	AddSource(newVelocityArrayY, sourceVelY, dt);
 
-	Swap(oldVelocityArrayX, newVelocityArrayX);
+	Swap(&oldVelocityArrayX, &newVelocityArrayX);
 	Diffuse(1, newVelocityArrayX, oldVelocityArrayX, viscosity, dt);
 
-	Swap(oldVelocityArrayY, newVelocityArrayY);
+	Swap(&oldVelocityArrayY, &newVelocityArrayY);
 	Diffuse(2, newVelocityArrayY, oldVelocityArrayY, viscosity, dt);
 
 	Projection(newVelocityArrayX, newVelocityArrayY, oldVelocityArrayX, oldVelocityArrayY);
-	Swap(oldVelocityArrayX, newVelocityArrayX);
-	Swap(oldVelocityArrayY, newVelocityArrayY);
+	Swap(&oldVelocityArrayX, &newVelocityArrayX);
+	Swap(&oldVelocityArrayY, &newVelocityArrayY);
 
 	Advection(1, newVelocityArrayX, oldVelocityArrayX, oldVelocityArrayX, oldVelocityArrayY, dt);
 	Advection(2, newVelocityArrayY, oldVelocityArrayY, oldVelocityArrayX, oldVelocityArrayY, dt);
 	Projection(newVelocityArrayX, newVelocityArrayY, oldVelocityArrayX, oldVelocityArrayY);
 }
-void FluidSolver::DensityStep(float* sourceArray, float diff, float dt) {
+void FluidSolver::DensityStep(float diff, float dt) {
 
-	AddSource(newDensityArray, sourceArray, dt);
-	Swap(oldDensityArray, newDensityArray);
+	AddSource(newDensityArray, sourceDens, dt);
+	Swap(&oldDensityArray, &newDensityArray);
 
 	Diffuse(1, oldDensityArray, newDensityArray, diff, dt);
-	Swap(oldDensityArray, newDensityArray);
+	Swap(&oldDensityArray, &newDensityArray);
 
 	Advection(2, newDensityArray, oldDensityArray, newVelocityArrayX, newVelocityArrayY, dt);
 }
- 
+
 void FluidSolver::Projection(float *newVelocityArrayX, float *newVelocityArrayY, float *oldVelocityArrayX, float *oldVelocityArrayY) {
 
 	int i, j, GaussIterator;
@@ -158,19 +166,12 @@ void FluidSolver::AddSource(float *newDensityArray, float *sourceArray, float dt
 		float temp;
 		temp = (dt * sourceArray[i]);
 		newDensityArray[i] += temp;
-		//if (newDensityArray[i] > 0 || newDensityArray[i] < 0 ) {
-		//	debugFile << newDensityArray[i] << " " << sourceArray[i]<< endl;
-		//}
 	}
 }
-void FluidSolver::Swap(float* oldDensityArray, float* newDensityArray) {
-	float* temp = new float[ConversionTools::GetArrayLength()]();
-	for (int i = 0; i < ConversionTools::GetArrayLength(); i++) {
-		temp[i] = oldDensityArray[i]; //writable size is unsigned int but 8bites might be written
-	}
-	std::memcpy(oldDensityArray, newDensityArray, N);
-	std::memcpy(newDensityArray, temp, N);
-	delete[] temp;
+void FluidSolver::Swap(float** oldDensityArray, float** newDensityArray) {
+	float* temp = *oldDensityArray;
+	*oldDensityArray = *newDensityArray;
+	*newDensityArray = temp;
 }
 void FluidSolver::SetBoundary(int resolution, int b, float* boundaryArray) {
 	int i;
@@ -179,7 +180,7 @@ void FluidSolver::SetBoundary(int resolution, int b, float* boundaryArray) {
 		boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, i)] = b == 1 ? -boundaryArray[ConversionTools::ConvertCoordToArray(resolution, i)] : boundaryArray[ConversionTools::ConvertCoordToArray(resolution, i)];
 		boundaryArray[ConversionTools::ConvertCoordToArray(i, 0)] = b == 2 ? -boundaryArray[ConversionTools::ConvertCoordToArray(i, 1)] : boundaryArray[ConversionTools::ConvertCoordToArray(i, 1)];
 		boundaryArray[ConversionTools::ConvertCoordToArray(i, resolution + 1)] = b == 2 ? -boundaryArray[ConversionTools::ConvertCoordToArray(i, resolution)] : boundaryArray[ConversionTools::ConvertCoordToArray(i, resolution)];
-	} 
+	}
 	boundaryArray[ConversionTools::ConvertCoordToArray(0, 0)] = 0.5f *(boundaryArray[ConversionTools::ConvertCoordToArray(1, 0)] + boundaryArray[ConversionTools::ConvertCoordToArray(0, 1)]);
 	boundaryArray[ConversionTools::ConvertCoordToArray(0, resolution + 1)] = 0.5f *(boundaryArray[ConversionTools::ConvertCoordToArray(1, resolution + 1)] + boundaryArray[ConversionTools::ConvertCoordToArray(0, resolution)]);
 	boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, 0)] = 0.5f *(boundaryArray[ConversionTools::ConvertCoordToArray(resolution, 0)] + boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, 1)]);

@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
 	//register callback functions
 	glutMouseFunc(InputHelper::OnMouseClick);
 	glutMotionFunc(InputHelper::OnMouseDrag);
+	glutKeyboardFunc(InputHelper::OnKeyDown);
 	glutDisplayFunc(InputHelper::Render);
 	glutIdleFunc(InputHelper::Calculate);
 
@@ -28,6 +29,4 @@ int main(int argc, char* argv[]) {
 	// Enter the event-processing loop
 	glutMainLoop();
 	return 0;
-
-	//TODO: implement vector field visual feedback display
 }

@@ -7,3 +7,8 @@
 /FluidDynamicsSimulationPrototype/.vs/FluidDynamicsSimulationPrototype/v15
 /FluidDynamicsSimulationPrototype/FluidDynamicsSimulationPrototype/Debug
 /FluidDynamicsSimulationPrototype/FluidDynamicsSimulationPrototype/Release
+/FluidDynamicsSimulationPrototype/freeglut.dll
+/FluidDynamicsSimulationPrototype/freeglut.lib
+/FluidDynamicsSimulationPrototype/glew32.dll
+/FluidDynamicsSimulationPrototype/glew32.lib
+/FluidDynamicsSimulationPrototype/glew32s.lib

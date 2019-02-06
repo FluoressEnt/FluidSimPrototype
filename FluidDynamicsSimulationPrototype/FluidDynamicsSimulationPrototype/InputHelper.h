@@ -11,6 +11,7 @@ typedef struct _InputSolver {
 class InputHelper {
 public:
 	static InputSolver fSolver;
+	static void OnKeyDown(unsigned char, int, int);
 	static void OnMouseClick(int, int, int, int);
 	static void OnMouseDrag(int, int);
 	static void Render();

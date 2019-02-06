@@ -2,30 +2,72 @@
 #include "ConversionTools.h"
 #include <gl\freeglut.h>
 #include <chrono> 
-#include <math.h>
 #include <iostream>
 
+using namespace std;
 using namespace std::chrono;
 
 InputSolver InputHelper::fSolver;
-float dt =0.04f;
+float dt = 0.04f;
+int mouseX;
+int mouseY;
+int oldMouseX;
+int oldMouseY;
+bool diffuseDisplay = true;
+
+void InputHelper::OnKeyDown(unsigned char key, int x, int y) {
+	switch (key) {
+	case 32:
+		diffuseDisplay = !diffuseDisplay;
+	}
+}
 
 void InputHelper::OnMouseClick(int button, int state, int xPos, int yPos) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		InputHelper::setMouseButtonState(true);
+		mouseX = xPos;
+		mouseY = yPos;
+
+		oldMouseX = mouseX;
+		oldMouseY = mouseY;
 	}
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		InputHelper::setMouseButtonState(false);
-		RefreshArray(fSolver.mySolver.sourceArray);
+		if (diffuseDisplay)
+			RefreshArray(fSolver.mySolver.sourceDens);
+		else {
+			RefreshArray(fSolver.mySolver.sourceVelX);
+			RefreshArray(fSolver.mySolver.sourceVelY);
+		}
 	}
 }
 void InputHelper::OnMouseDrag(int xPos, int yPos) {
-	if (InputHelper::isMouseButtonDown()) {
+	if (InputHelper::isMouseButtonDown() && xPos > 0 && xPos < ConversionTools::GetResolution()) {
+
+		if (diffuseDisplay)
+			RefreshArray(fSolver.mySolver.sourceDens);
+		else {
+			RefreshArray(fSolver.mySolver.sourceVelX);
+			RefreshArray(fSolver.mySolver.sourceVelY);
+		}
+
+		mouseX = xPos;
+		mouseY = yPos;
+
 		int arrayValue = ConversionTools::ConvertCoordToArray(xPos, yPos);
 
 		if (arrayValue < ConversionTools::GetArrayLength() && arrayValue > 0) {
-			fSolver.mySolver.sourceArray[arrayValue] = 1.0f;
+			if (diffuseDisplay)
+				fSolver.mySolver.sourceDens[arrayValue] = 1.0f;
+			else {
+				fSolver.mySolver.sourceVelX[arrayValue] += mouseX - oldMouseX;
+				fSolver.mySolver.sourceVelY[arrayValue] += oldMouseY - mouseY;
+
+			}
 		}
+
+		oldMouseX = mouseX;
+		oldMouseY = mouseY;
 	}
 }
 
@@ -44,7 +86,7 @@ void InputHelper::RefreshArray(float *sourceArray) {
 		}
 	}
 }
-
+//shifts origin to centre of screen
 float InputHelper::ConvertWindowToGL(int number, bool isHeight) {
 	float windowDimension;
 	float newNumber = (float)number;
@@ -65,30 +107,76 @@ float InputHelper::ConvertWindowToGL(int number, bool isHeight) {
 void InputHelper::Render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
-	glBegin(GL_POINTS);
 
-	float* calculatedDensity = fSolver.mySolver.GetOutArray();
+	//toggle display between diffuse and vector field
 
-	for (int i = 0; i < ConversionTools::GetArrayLength(); i++) {
+	if (diffuseDisplay) {
+		glBegin(GL_POINTS);
+		float* calculatedDensity = fSolver.mySolver.GetDensityArray();
 
-		Colour3 colourValue = DetermineColour(calculatedDensity[i]);
+		for (int i = 0; i < ConversionTools::GetArrayLength(); i++) {
 
-		std::tuple<int, int> coords = ConversionTools::ConvertArraytoCoord(i);
-		float x = ConvertWindowToGL(std::get<1>(coords), false);
-		float y = ConvertWindowToGL(std::get<0>(coords), true);
+			Colour3 colourValue = DetermineColour(calculatedDensity[i]);
 
-		if (fSolver.mySolver.sourceArray[i] == 1.0f) {
-			glColor3f(1.0f, 1.0f, 1.0f);
-			glVertex3f(x, y, 0.0f);
+			tuple<int, int> coords = ConversionTools::ConvertArraytoCoord(i);
+			float x = ConvertWindowToGL(std::get<0>(coords), false);
+			float y = ConvertWindowToGL(std::get<1>(coords), true);
+
+			if (fSolver.mySolver.sourceDens[i] == 1.0f) {
+				glColor3f(1.0f, 1.0f, 1.0f);
+				glVertex3f(x, y, 0.0f);
+			}
+			else {
+				glColor3f(colourValue.getX(), colourValue.getY(), colourValue.getZ());
+				glVertex3f(x, y, 0.0f);
+			}
 		}
-		else {
-			glColor3f(colourValue.getX(), colourValue.getY(), colourValue.getZ());
-			glVertex3f(x, y, 0.0f);
-		}
+		glEnd();
+		glutSwapBuffers();
 	}
 
-	glEnd();
-	glutSwapBuffers();
+	else {
+		glBegin(GL_LINES);
+		glLineWidth(1.0f);
+		glColor3f(1.0f, 1.0f, 1.0f);
+
+		float* calculatedVelocityX = fSolver.mySolver.GetVelocityXArray();
+		float* calculatedVelocityY = fSolver.mySolver.GetVelocityYArray();
+
+		for (int i = 5; i <= ConversionTools::GetResolution(); i = i + 10) {
+			for (int j = 5; j <= ConversionTools::GetResolution(); j = j + 10) {
+
+				int arrayPos = ConversionTools::ConvertCoordToArray(i, j);
+				float velX = calculatedVelocityX[arrayPos];
+				float velY = calculatedVelocityY[arrayPos];
+
+				float magnitude = sqrt(velX*velX + velY * velY);
+
+				if (magnitude != 0) {
+					//find unit components
+					float unitX = velX / magnitude;
+					float unitY = velY / magnitude;
+
+					//scale components with log and scalar to standardise the size & make visible
+					float scale = log(magnitude*1e20 + 1.0);
+					float newX = unitX * scale;
+					float newY = unitY * scale;
+
+					//creating coordinates in window space where line is drawn around the origin i,j
+					tuple<float, float> startWindowPos = ConversionTools::ConvertCoordtoWindow(i - newX / 2, j - newY / 2);
+					tuple<float, float> endWindowPos = ConversionTools::ConvertCoordtoWindow(i + newX / 2, j + newY / 2);
+					//cout << "x: " << newI-i << " y: " << newJ-j << endl;
+
+					//start of line
+					glVertex2f(get<0>(startWindowPos), get<1>(startWindowPos));
+					//end of line
+					glVertex2f(get<0>(endWindowPos), get<1>(endWindowPos));
+				}
+			}
+		}
+		glEnd();
+		glutSwapBuffers();
+	}
 }
 
 void InputHelper::Calculate() {
@@ -96,8 +184,8 @@ void InputHelper::Calculate() {
 	auto start = high_resolution_clock::now();
 
 	fSolver.mySolver.VelocityStep(1.0f, dt);
-	fSolver.mySolver.DensityStep(fSolver.mySolver.sourceArray, 1.0f, dt);
-	Render();
+	fSolver.mySolver.DensityStep(1.0f, dt);
+	glutPostRedisplay();
 
 	auto end = high_resolution_clock::now();
 

@@ -5,11 +5,15 @@ public:
 	FluidSolver(int);
 	~FluidSolver(void);
 
-	float* sourceArray;
+	float* sourceDens;
+	float* sourceVelX;
+	float* sourceVelY;
 
 	void VelocityStep(float, float);
-	void DensityStep(float*, float, float);
-	float* const GetOutArray();
+	void DensityStep(float, float);
+	float* const GetDensityArray();
+	float* const GetVelocityXArray();
+	float* const GetVelocityYArray();
 
 private:
 	float* newVelocityArrayX;
@@ -25,5 +29,5 @@ private:
 	void Diffuse(int, float *, float *, float, float);
 	void AddSource(float *, float *, float);
 	void SetBoundary(int, int, float*);
-	void Swap(float*, float*);
+	void Swap(float**, float**);
 };
