@@ -14,6 +14,7 @@ public:
 	float* const GetDensityArray();
 	float* const GetVelocityXArray();
 	float* const GetVelocityYArray();
+	void Refresh();
 
 private:
 	float* newVelocityArrayX;
@@ -30,4 +31,5 @@ private:
 	void AddSource(float *, float *, float);
 	void SetBoundary(int, int, float*);
 	void Swap(float**, float**);
+	void Swap2(float*, float*);
 };

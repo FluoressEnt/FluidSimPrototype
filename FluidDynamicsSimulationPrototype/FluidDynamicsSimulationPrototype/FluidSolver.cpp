@@ -64,7 +64,7 @@ void FluidSolver::DensityStep(float diff, float dt) {
 	AddSource(newDensityArray, sourceDens, dt);
 	Swap(&oldDensityArray, &newDensityArray);
 
-	Diffuse(1, oldDensityArray, newDensityArray, diff, dt);
+	Diffuse(1, newDensityArray, oldDensityArray, diff, dt);
 	Swap(&oldDensityArray, &newDensityArray);
 
 	Advection(2, newDensityArray, oldDensityArray, newVelocityArrayX, newVelocityArrayY, dt);
@@ -168,10 +168,11 @@ void FluidSolver::AddSource(float *newDensityArray, float *sourceArray, float dt
 		newDensityArray[i] += temp;
 	}
 }
-void FluidSolver::Swap(float** oldDensityArray, float** newDensityArray) {
-	float* temp = *oldDensityArray;
-	*oldDensityArray = *newDensityArray;
-	*newDensityArray = temp;
+
+void FluidSolver::Swap(float** arrayOne, float** arrayTwo) {
+	float* temp = *arrayOne;
+	*arrayOne = *arrayTwo;
+	*arrayTwo = temp;
 }
 void FluidSolver::SetBoundary(int resolution, int b, float* boundaryArray) {
 	int i;
@@ -185,4 +186,34 @@ void FluidSolver::SetBoundary(int resolution, int b, float* boundaryArray) {
 	boundaryArray[ConversionTools::ConvertCoordToArray(0, resolution + 1)] = 0.5f *(boundaryArray[ConversionTools::ConvertCoordToArray(1, resolution + 1)] + boundaryArray[ConversionTools::ConvertCoordToArray(0, resolution)]);
 	boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, 0)] = 0.5f *(boundaryArray[ConversionTools::ConvertCoordToArray(resolution, 0)] + boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, 1)]);
 	boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, resolution + 1)] = 0.5f *(boundaryArray[ConversionTools::ConvertCoordToArray(resolution, resolution + 1)] + boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, resolution)]);
+}
+
+void FluidSolver::Refresh() {
+	//clear old arrays
+	delete newVelocityArrayX;
+	delete newVelocityArrayY;
+
+	delete oldVelocityArrayX;
+	delete oldVelocityArrayY;
+
+	delete newDensityArray;
+	delete oldDensityArray;
+
+	delete sourceDens;
+	delete sourceVelX;
+	delete sourceVelY;
+
+	//create new arrays initialised at 0
+	newVelocityArrayX = new float[ConversionTools::GetArrayLength()]();
+	newVelocityArrayY = new float[ConversionTools::GetArrayLength()]();
+
+	oldVelocityArrayX = new float[ConversionTools::GetArrayLength()]();
+	oldVelocityArrayY = new float[ConversionTools::GetArrayLength()]();
+
+	newDensityArray = new float[ConversionTools::GetArrayLength()]();
+	oldDensityArray = new float[ConversionTools::GetArrayLength()]();
+
+	sourceDens = new float[ConversionTools::GetArrayLength()];
+	sourceVelX = new float[ConversionTools::GetArrayLength()];
+	sourceVelY = new float[ConversionTools::GetArrayLength()];
 }

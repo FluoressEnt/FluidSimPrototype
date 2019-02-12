@@ -19,7 +19,14 @@ void InputHelper::OnKeyDown(unsigned char key, int x, int y) {
 	switch (key) {
 	case 32:
 		diffuseDisplay = !diffuseDisplay;
+	
+	case 82:
+		fSolver.mySolver.Refresh();
+
+	case 114:
+		fSolver.mySolver.Refresh();
 	}
+
 }
 
 void InputHelper::OnMouseClick(int button, int state, int xPos, int yPos) {
@@ -122,14 +129,9 @@ void InputHelper::Render()
 			float x = ConvertWindowToGL(std::get<0>(coords), false);
 			float y = ConvertWindowToGL(std::get<1>(coords), true);
 
-			if (fSolver.mySolver.sourceDens[i] == 1.0f) {
-				glColor3f(1.0f, 1.0f, 1.0f);
-				glVertex3f(x, y, 0.0f);
-			}
-			else {
-				glColor3f(colourValue.getX(), colourValue.getY(), colourValue.getZ());
-				glVertex3f(x, y, 0.0f);
-			}
+			glColor3f(colourValue.getX(), colourValue.getY(), colourValue.getZ());
+			glVertex3f(x, y, 0.0f);
+
 		}
 		glEnd();
 		glutSwapBuffers();
