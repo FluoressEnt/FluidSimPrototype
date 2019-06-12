@@ -15,6 +15,9 @@ int oldMouseX;
 int oldMouseY;
 bool diffuseDisplay = true;
 
+float totalTime;
+int itteration;
+
 void InputHelper::OnKeyDown(unsigned char key, int x, int y) {
 	switch (key) {
 	case 32:
@@ -25,7 +28,11 @@ void InputHelper::OnKeyDown(unsigned char key, int x, int y) {
 
 	case 114:
 		fSolver.mySolver.Refresh();
+	
+	case 116:
+			cout << " itterations: " << itteration << " mean timestep: " << totalTime / itteration << endl;
 	}
+	
 
 }
 
@@ -41,10 +48,10 @@ void InputHelper::OnMouseClick(int button, int state, int xPos, int yPos) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 		InputHelper::setMouseButtonState(false);
 		if (diffuseDisplay)
-			RefreshArray(fSolver.mySolver.sourceDens);
+			RefreshArray(fSolver.mySolver.sDens);
 		else {
-			RefreshArray(fSolver.mySolver.sourceVelX);
-			RefreshArray(fSolver.mySolver.sourceVelY);
+			RefreshArray(fSolver.mySolver.sVelX);
+			RefreshArray(fSolver.mySolver.sVelY);
 		}
 	}
 }
@@ -52,10 +59,10 @@ void InputHelper::OnMouseDrag(int xPos, int yPos) {
 	if (InputHelper::isMouseButtonDown() && xPos > 0 && xPos < ConversionTools::GetResolution()) {
 
 		if (diffuseDisplay)
-			RefreshArray(fSolver.mySolver.sourceDens);
+			RefreshArray(fSolver.mySolver.sDens);
 		else {
-			RefreshArray(fSolver.mySolver.sourceVelX);
-			RefreshArray(fSolver.mySolver.sourceVelY);
+			RefreshArray(fSolver.mySolver.sVelX);
+			RefreshArray(fSolver.mySolver.sVelY);
 		}
 
 		mouseX = xPos;
@@ -65,10 +72,10 @@ void InputHelper::OnMouseDrag(int xPos, int yPos) {
 
 		if (arrayValue < ConversionTools::GetArrayLength() && arrayValue > 0) {
 			if (diffuseDisplay)
-				fSolver.mySolver.sourceDens[arrayValue] = 1.0f;
+				fSolver.mySolver.sDens[arrayValue] = 1.0f;
 			else {
-				fSolver.mySolver.sourceVelX[arrayValue] += mouseX - oldMouseX;
-				fSolver.mySolver.sourceVelY[arrayValue] += oldMouseY - mouseY;
+				fSolver.mySolver.sVelX[arrayValue] += mouseX - oldMouseX;
+				fSolver.mySolver.sVelY[arrayValue] += oldMouseY - mouseY;
 
 			}
 		}
@@ -187,12 +194,16 @@ void InputHelper::Calculate() {
 
 	fSolver.mySolver.VelocityStep(1.0f, dt);
 	fSolver.mySolver.DensityStep(1.0f, dt);
-	glutPostRedisplay();
 
 	auto end = high_resolution_clock::now();
 
 	duration<double> timeSpan = duration_cast<duration<double>>(end - start);
 	dt = timeSpan.count();
+
+	itteration++;
+	totalTime += dt;
+
+	glutPostRedisplay();
 }
 
 Colour3 InputHelper::DetermineColour(float value)
@@ -232,18 +243,37 @@ Colour3 InputHelper::DetermineColour(float value)
 		if (logValue < -40) {					//yellow
 			return Colour3(1.0f, 1.0f, 0.0f);
 		}
+		if (logValue < -35) {					//yellow
+			return Colour3(1.0f, 0.9f, 0.0f);
+		}
 		else if (logValue < -30) {				//yellow-orange
 			return Colour3(1.0f, 0.8f, 0.0f);
 		}
+		else if (logValue < -25) {				//orange
+			return Colour3(1.0f, 0.7f, 0.0f);
+		}
 		else if (logValue < -20) {				//orange
+			return Colour3(1.0f, 0.6f, 0.0f);
+		}
+		else if (logValue < -15) {				//orange-red
 			return Colour3(1.0f, 0.5f, 0.0f);
 		}
 		else if (logValue < -10) {				//orange-red
+			return Colour3(1.0f, 0.4f, 0.0f);
+		}
+		else if (logValue < -7) {				//red
+			return Colour3(1.0f, 0.3f, 0.0f);
+		}
+		else if (logValue < -5) {				//red
 			return Colour3(1.0f, 0.2f, 0.0f);
+		}
+		else if (logValue < -2) {				//red
+			return Colour3(1.0f, 0.1f, 0.0f);
 		}
 		else if (logValue < 0) {				//red
 			return Colour3(1.0f, 0.0f, 0.0f);
 		}
 
 	}
+	return Colour3(0.0f, 0.0f, 0.0f);
 }

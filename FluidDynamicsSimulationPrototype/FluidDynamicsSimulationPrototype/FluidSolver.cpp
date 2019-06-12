@@ -1,73 +1,66 @@
 #include "FluidSolver.h"
 #include "ConversionTools.h"
-//#include <math.h>
-//#include <iostream>
-//#include <fstream>
 
 using namespace std;
-//ofstream debugFile;
 
 
 FluidSolver::FluidSolver(int n) :N(n)
 {
-	newVelocityArrayX = new float[ConversionTools::GetArrayLength()]();
-	newVelocityArrayY = new float[ConversionTools::GetArrayLength()]();
+	newVelX = new float[ConversionTools::GetArrayLength()]();
+	newVelY = new float[ConversionTools::GetArrayLength()]();
 
-	oldVelocityArrayX = new float[ConversionTools::GetArrayLength()]();
-	oldVelocityArrayY = new float[ConversionTools::GetArrayLength()]();
+	oldVelX = new float[ConversionTools::GetArrayLength()]();
+	oldVelY = new float[ConversionTools::GetArrayLength()]();
 
-	newDensityArray = new float[ConversionTools::GetArrayLength()]();
-	oldDensityArray = new float[ConversionTools::GetArrayLength()]();
+	newDens = new float[ConversionTools::GetArrayLength()]();
+	oldDens = new float[ConversionTools::GetArrayLength()]();
 
-	sourceDens = new float[ConversionTools::GetArrayLength()];
-	sourceVelX = new float[ConversionTools::GetArrayLength()];
-	sourceVelY = new float[ConversionTools::GetArrayLength()];
-
-	//debugFile.open("Debug.txt");
+	sDens = new float[ConversionTools::GetArrayLength()];
+	sVelX = new float[ConversionTools::GetArrayLength()];
+	sVelY = new float[ConversionTools::GetArrayLength()];
 }
 FluidSolver::~FluidSolver(void)
 {
-	//debugFile.close();
 }
 
 float* const FluidSolver::GetDensityArray() {
-	return newDensityArray;
+	return newDens;
 }
 float* const FluidSolver::GetVelocityXArray() {
-	return newVelocityArrayX;
+	return newVelX;
 }
 float* const FluidSolver::GetVelocityYArray() {
-	return newVelocityArrayY;
+	return newVelY;
 }
 
 void FluidSolver::VelocityStep(float viscosity, float dt) {
 
-	AddSource(newVelocityArrayX, sourceVelX, dt);
-	AddSource(newVelocityArrayY, sourceVelY, dt);
+	AddSource(newVelX, sVelX, dt);
+	AddSource(newVelY, sVelY, dt);
 
-	Swap(&oldVelocityArrayX, &newVelocityArrayX);
-	Diffuse(1, newVelocityArrayX, oldVelocityArrayX, viscosity, dt);
+	Swap(&oldVelX, &newVelX);
+	Diffuse(1, newVelX, oldVelX, viscosity, dt);
 
-	Swap(&oldVelocityArrayY, &newVelocityArrayY);
-	Diffuse(2, newVelocityArrayY, oldVelocityArrayY, viscosity, dt);
+	Swap(&oldVelY, &newVelY);
+	Diffuse(2, newVelY, oldVelY, viscosity, dt);
 
-	Projection(newVelocityArrayX, newVelocityArrayY, oldVelocityArrayX, oldVelocityArrayY);
-	Swap(&oldVelocityArrayX, &newVelocityArrayX);
-	Swap(&oldVelocityArrayY, &newVelocityArrayY);
+	Projection(newVelX, newVelY, oldVelX, oldVelY);
+	Swap(&oldVelX, &newVelX);
+	Swap(&oldVelY, &newVelY);
 
-	Advection(1, newVelocityArrayX, oldVelocityArrayX, oldVelocityArrayX, oldVelocityArrayY, dt);
-	Advection(2, newVelocityArrayY, oldVelocityArrayY, oldVelocityArrayX, oldVelocityArrayY, dt);
-	Projection(newVelocityArrayX, newVelocityArrayY, oldVelocityArrayX, oldVelocityArrayY);
+	Advection(1, newVelX, oldVelX, oldVelX, oldVelY, dt);
+	Advection(2, newVelY, oldVelY, oldVelX, oldVelY, dt);
+	Projection(newVelX, newVelY, oldVelX, oldVelY);
 }
 void FluidSolver::DensityStep(float diff, float dt) {
 
-	AddSource(newDensityArray, sourceDens, dt);
-	Swap(&oldDensityArray, &newDensityArray);
+	AddSource(newDens, sDens, dt);
+	Swap(&oldDens, &newDens);
 
-	Diffuse(1, newDensityArray, oldDensityArray, diff, dt);
-	Swap(&oldDensityArray, &newDensityArray);
+	Diffuse(1, newDens, oldDens, diff, dt);
+	Swap(&oldDens, &newDens);
 
-	Advection(2, newDensityArray, oldDensityArray, newVelocityArrayX, newVelocityArrayY, dt);
+	Advection(2, newDens, oldDens, newVelX, newVelY, dt);
 }
 
 void FluidSolver::Projection(float *newVelocityArrayX, float *newVelocityArrayY, float *oldVelocityArrayX, float *oldVelocityArrayY) {
@@ -190,30 +183,30 @@ void FluidSolver::SetBoundary(int resolution, int b, float* boundaryArray) {
 
 void FluidSolver::Refresh() {
 	//clear old arrays
-	delete newVelocityArrayX;
-	delete newVelocityArrayY;
+	delete newVelX;
+	delete newVelY;
 
-	delete oldVelocityArrayX;
-	delete oldVelocityArrayY;
+	delete oldVelX;
+	delete oldVelY;
 
-	delete newDensityArray;
-	delete oldDensityArray;
+	delete newDens;
+	delete oldDens;
 
-	delete sourceDens;
-	delete sourceVelX;
-	delete sourceVelY;
+	delete sDens;
+	delete sVelX;
+	delete sVelY;
 
 	//create new arrays initialised at 0
-	newVelocityArrayX = new float[ConversionTools::GetArrayLength()]();
-	newVelocityArrayY = new float[ConversionTools::GetArrayLength()]();
+	newVelX = new float[ConversionTools::GetArrayLength()]();
+	newVelY = new float[ConversionTools::GetArrayLength()]();
 
-	oldVelocityArrayX = new float[ConversionTools::GetArrayLength()]();
-	oldVelocityArrayY = new float[ConversionTools::GetArrayLength()]();
+	oldVelX = new float[ConversionTools::GetArrayLength()]();
+	oldVelY = new float[ConversionTools::GetArrayLength()]();
 
-	newDensityArray = new float[ConversionTools::GetArrayLength()]();
-	oldDensityArray = new float[ConversionTools::GetArrayLength()]();
+	newDens = new float[ConversionTools::GetArrayLength()]();
+	oldDens = new float[ConversionTools::GetArrayLength()]();
 
-	sourceDens = new float[ConversionTools::GetArrayLength()];
-	sourceVelX = new float[ConversionTools::GetArrayLength()];
-	sourceVelY = new float[ConversionTools::GetArrayLength()];
+	sDens = new float[ConversionTools::GetArrayLength()];
+	sVelX = new float[ConversionTools::GetArrayLength()];
+	sVelY = new float[ConversionTools::GetArrayLength()];
 }

@@ -5,9 +5,9 @@ public:
 	FluidSolver(int);
 	~FluidSolver(void);
 
-	float* sourceDens;
-	float* sourceVelX;
-	float* sourceVelY;
+	float* sDens;
+	float* sVelX;
+	float* sVelY;
 
 	void VelocityStep(float, float);
 	void DensityStep(float, float);
@@ -17,12 +17,12 @@ public:
 	void Refresh();
 
 private:
-	float* newVelocityArrayX;
-	float* newVelocityArrayY;
-	float* oldVelocityArrayX;
-	float* oldVelocityArrayY;
-	float* newDensityArray;
-	float* oldDensityArray;
+	float* newVelX;
+	float* newVelY;
+	float* oldVelX;
+	float* oldVelY;
+	float* newDens;
+	float* oldDens;
 	int N;
 
 	void Projection(float*, float*, float*, float*);
@@ -31,5 +31,4 @@ private:
 	void AddSource(float *, float *, float);
 	void SetBoundary(int, int, float*);
 	void Swap(float**, float**);
-	void Swap2(float*, float*);
 };
