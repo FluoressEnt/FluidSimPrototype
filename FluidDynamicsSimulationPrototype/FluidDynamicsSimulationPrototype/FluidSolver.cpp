@@ -3,7 +3,7 @@
 
 using namespace std;
 
-
+///declaring arrays used for storage of data
 FluidSolver::FluidSolver(int n) :N(n)
 {
 	newVelX = new float[ConversionTools::GetArrayLength()]();
@@ -23,16 +23,20 @@ FluidSolver::~FluidSolver(void)
 {
 }
 
+///function to retreive array from solver to another class
 float* const FluidSolver::GetDensityArray() {
 	return newDens;
 }
+///function to retreive array from solver to another class
 float* const FluidSolver::GetVelocityXArray() {
 	return newVelX;
 }
+///function to retreive array from solver to another class
 float* const FluidSolver::GetVelocityYArray() {
 	return newVelY;
 }
 
+///function for the velocity step of the solver
 void FluidSolver::VelocityStep(float viscosity, float dt) {
 
 	AddSource(newVelX, sVelX, dt);
@@ -52,6 +56,7 @@ void FluidSolver::VelocityStep(float viscosity, float dt) {
 	Advection(2, newVelY, oldVelY, oldVelX, oldVelY, dt);
 	Projection(newVelX, newVelY, oldVelX, oldVelY);
 }
+///function for the density step of the solver
 void FluidSolver::DensityStep(float diff, float dt) {
 
 	AddSource(newDens, sDens, dt);
@@ -63,6 +68,7 @@ void FluidSolver::DensityStep(float diff, float dt) {
 	Advection(2, newDens, oldDens, newVelX, newVelY, dt);
 }
 
+///function calculating the projection of the fluid
 void FluidSolver::Projection(float *newVelocityArrayX, float *newVelocityArrayY, float *oldVelocityArrayX, float *oldVelocityArrayY) {
 
 	int i, j, GaussIterator;
@@ -101,6 +107,7 @@ void FluidSolver::Projection(float *newVelocityArrayX, float *newVelocityArrayY,
 	SetBoundary(N, 1, newVelocityArrayX);
 	SetBoundary(N, 2, newVelocityArrayY);
 }
+///function calculating the advection of the fluid
 void FluidSolver::Advection(int b, float *newDensityArray, float *oldDensityArray, float *velocityArrayX, float *velocityArrayY, float dt) {
 
 	int i, j, left, bottom, right, top;
@@ -136,6 +143,7 @@ void FluidSolver::Advection(int b, float *newDensityArray, float *oldDensityArra
 	SetBoundary(N, b, newDensityArray);
 
 }
+///function calculating the diffusion of the fluid
 void FluidSolver::Diffuse(int b, float *newDensityArray, float *oldDensityArray, float diff, float dt) {
 
 	int i, j, GaussIterator;
@@ -152,6 +160,7 @@ void FluidSolver::Diffuse(int b, float *newDensityArray, float *oldDensityArray,
 	}
 }
 
+///function adding a source to the fluid
 void FluidSolver::AddSource(float *newDensityArray, float *sourceArray, float dt) {
 
 	int i, size = (N + 2)*(N + 2);
@@ -162,11 +171,14 @@ void FluidSolver::AddSource(float *newDensityArray, float *sourceArray, float dt
 	}
 }
 
+///function that swaps the pointers of two arrays
 void FluidSolver::Swap(float** arrayOne, float** arrayTwo) {
 	float* temp = *arrayOne;
 	*arrayOne = *arrayTwo;
 	*arrayTwo = temp;
 }
+
+///function that sets the boundary of the fluid to be contained
 void FluidSolver::SetBoundary(int resolution, int b, float* boundaryArray) {
 	int i;
 	for (i = 1; i <= resolution; i++) {
@@ -181,6 +193,7 @@ void FluidSolver::SetBoundary(int resolution, int b, float* boundaryArray) {
 	boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, resolution + 1)] = 0.5f *(boundaryArray[ConversionTools::ConvertCoordToArray(resolution, resolution + 1)] + boundaryArray[ConversionTools::ConvertCoordToArray(resolution + 1, resolution)]);
 }
 
+///function that sets the data in the arrays to 0
 void FluidSolver::Refresh() {
 	//clear old arrays
 	delete newVelX;

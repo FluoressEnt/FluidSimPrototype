@@ -18,24 +18,25 @@ bool diffuseDisplay = true;
 float totalTime;
 int itteration;
 
+///A function that catches specific key presses
 void InputHelper::OnKeyDown(unsigned char key, int x, int y) {
 	switch (key) {
-	case 32:
+	case 32:									//spacebar - swap visualisation to render
 		diffuseDisplay = !diffuseDisplay;
 	
-	case 82:
+	case 82:									//R - refreshes all arrays in simulation
 		fSolver.mySolver.Refresh();
 
-	case 114:
+	case 114:									//r - refreshes all arrays in simulation
 		fSolver.mySolver.Refresh();
 	
-	case 116:
+	case 116:									//t - calculates itterations and timestep and prints to debug console
 			cout << " itterations: " << itteration << " mean timestep: " << totalTime / itteration << endl;
 	}
 	
 
 }
-
+///A function that updates the X&Y position of the mouse or refreshes the input arrays
 void InputHelper::OnMouseClick(int button, int state, int xPos, int yPos) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		InputHelper::setMouseButtonState(true);
@@ -55,6 +56,8 @@ void InputHelper::OnMouseClick(int button, int state, int xPos, int yPos) {
 		}
 	}
 }
+///A function that refreshes the input arrays to 0, updates the X&Y position of the mouse
+///Then assigns that frames values for the inputof either density or velocity depenant on the current visualisation selected
 void InputHelper::OnMouseDrag(int xPos, int yPos) {
 	if (InputHelper::isMouseButtonDown() && xPos > 0 && xPos < ConversionTools::GetResolution()) {
 
@@ -92,6 +95,7 @@ bool const InputHelper::isMouseButtonDown() {
 	return fSolver.mouseButtonDown;
 }
 
+///function to refresh the source array
 void InputHelper::RefreshArray(float *sourceArray) {
 	for (int i = 0; i < ConversionTools::GetResolution(); i++) {
 		for (int j = 0; j < ConversionTools::GetResolution(); j++) {
@@ -100,7 +104,7 @@ void InputHelper::RefreshArray(float *sourceArray) {
 		}
 	}
 }
-//shifts origin to centre of screen
+///a function to shift the origin to centre of screen
 float InputHelper::ConvertWindowToGL(int number, bool isHeight) {
 	float windowDimension;
 	float newNumber = (float)number;
@@ -118,6 +122,7 @@ float InputHelper::ConvertWindowToGL(int number, bool isHeight) {
 	return newNumber;
 }
 
+///A function that renders either the representation of diffusion or velocity field 
 void InputHelper::Render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
@@ -126,10 +131,12 @@ void InputHelper::Render()
 
 	if (diffuseDisplay) {
 		glBegin(GL_POINTS);
+		//retreive the solver's most recent density array
 		float* calculatedDensity = fSolver.mySolver.GetDensityArray();
 
 		for (int i = 0; i < ConversionTools::GetArrayLength(); i++) {
 
+			//determine point's colour based on a clamped scale
 			Colour3 colourValue = DetermineColour(calculatedDensity[i]);
 
 			tuple<int, int> coords = ConversionTools::ConvertArraytoCoord(i);
@@ -149,6 +156,7 @@ void InputHelper::Render()
 		glLineWidth(1.0f);
 		glColor3f(1.0f, 1.0f, 1.0f);
 
+		//retreive solver's most recent velocity arrays
 		float* calculatedVelocityX = fSolver.mySolver.GetVelocityXArray();
 		float* calculatedVelocityY = fSolver.mySolver.GetVelocityYArray();
 
@@ -174,7 +182,6 @@ void InputHelper::Render()
 					//creating coordinates in window space where line is drawn around the origin i,j
 					tuple<float, float> startWindowPos = ConversionTools::ConvertCoordtoWindow(i - newX / 2, j - newY / 2);
 					tuple<float, float> endWindowPos = ConversionTools::ConvertCoordtoWindow(i + newX / 2, j + newY / 2);
-					//cout << "x: " << newI-i << " y: " << newJ-j << endl;
 
 					//start of line
 					glVertex2f(get<0>(startWindowPos), get<1>(startWindowPos));
@@ -188,6 +195,7 @@ void InputHelper::Render()
 	}
 }
 
+///A function that calls the solver's calculate function and measures the time taken to perform one itteration
 void InputHelper::Calculate() {
 
 	auto start = high_resolution_clock::now();
@@ -206,6 +214,7 @@ void InputHelper::Calculate() {
 	glutPostRedisplay();
 }
 
+///A function that determines the colour of a value using a clamped scale
 Colour3 InputHelper::DetermineColour(float value)
 {
 	//make sure not 0 or will return error
